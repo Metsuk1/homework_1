@@ -1,0 +1,13 @@
+PerfomanceTest
+Test ArrayList
+Bulk Add - Time: 100 ms , Memory: 20 MB
+Add_Remove - time: 9 ms , memory: 0 mb
+
+Test Linked List
+Bulk Add - Time: 32 ms , Memory: 40 MB
+Add_Remove - time: 1 ms , memory: 0 mb
+
+Test CustomList
+Bulk Add - Time: 79 ms , Memory: 28 MB
+Add_Remove - time: 95 ms , memory: 3 mb
+

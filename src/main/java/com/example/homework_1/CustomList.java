@@ -41,16 +41,24 @@ public class CustomList <T> implements List<T> {
     public Iterator<T> iterator() {
         return new Iterator<>() {
 
-            private int i = 0;
+            private int index = 0;
+            private int lastReturnedIndex = -1;
 
             @Override
             public boolean hasNext() {
-                return i  < length;
+                return index  < length;
             }
 
             @Override
             public T next() {
-                return get(i++);
+                return get(index++);
+            }
+
+            @Override
+            public void remove() {
+                if(index < 0)throw new IllegalStateException();
+                CustomList.this.remove(--index);
+                lastReturnedIndex = -1;
             }
 
         };
