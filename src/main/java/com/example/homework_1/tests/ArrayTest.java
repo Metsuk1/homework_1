@@ -1,4 +1,6 @@
-package com.example.homework_1.arrayImplementation;
+package com.example.homework_1.tests;
+
+import com.example.homework_1.arrayImplementation.ArrayOperations;
 
 import java.io.File;
 import java.io.IOException;
