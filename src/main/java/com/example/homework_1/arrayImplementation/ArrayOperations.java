@@ -4,7 +4,7 @@ public class ArrayOperations {
 
     /**
     Time complexity: O(n)
-     Space complexity: O(k) k is the position
+     Space complexity: O(1)
      shifting elements with using method System.arraycopy
      */
     public static void shiftLeftSystemCopy(int[] array, int positions) {
@@ -20,7 +20,7 @@ public class ArrayOperations {
 
     /** Shift array elements using manual for loop
      * Time complexity:O(n)
-     * Space complexity: O(k) where is the k is position
+     * Space complexity: O(1)
      * */
     public static void shiftLeftManualLoop(int[] array, int positions) {
         if(array == null || positions < 0 || positions >= array.length) return;

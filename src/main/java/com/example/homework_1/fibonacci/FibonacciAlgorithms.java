@@ -3,8 +3,9 @@ package com.example.homework_1.fibonacci;
 import java.util.HashMap;
 
 public class FibonacciAlgorithms {
-    private static HashMap<Integer,Long> cache = new HashMap<>();
+    public static HashMap<Integer,Long> cache = new HashMap<>();
 
+    public FibonacciAlgorithms() {}
 /*
 Time complexity is: O(2^n) because each call fibonacciRecursive(n)results in two recursive calls
 Space complexity:O(n) because of the call stack, the maximum depth is n

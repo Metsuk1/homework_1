@@ -1,12 +1,12 @@
-package com.example.homework_1;
+package com.example.homework_1.tests;
 
 
 import com.example.homework_1.fibonacci.FibonacciAlgorithms;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.example.homework_1.runner.Assert;
+import com.example.homework_1.runner.annotations.BeforeEach;
+import com.example.homework_1.runner.annotations.Test;
+import com.example.homework_1.runner.annotations.AfterEach;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FibonacciAlgorithmsTest {
 
@@ -26,24 +26,24 @@ public class FibonacciAlgorithmsTest {
     @Test
      void testFibonacciRecursive() {
         long res = fib.fibonacciRecursive(10);
-        assertEquals(55, res);
+        Assert.assertEquals(55, res);
     }
 
     @Test
     void testFibonacciIterative() {
         long res = fib.fibonacciIterative(10);
-        assertEquals(55, res);
+        Assert.assertEquals(55, res);
     }
 
     @Test
     void testFibonacciMemoized() {
         long res = fib.fibonacciMemoized(10);
-        assertEquals(55, res);
+        Assert.assertEquals(55, res);
     }
 
     @Test
     void compareFibonacciIterative_and_memoized() {
-        assertEquals(fib.fibonacciIterative(10), fib.fibonacciMemoized(10));
+        Assert.assertEquals(fib.fibonacciIterative(10), fib.fibonacciMemoized(10));
     }
 
     @Test
@@ -53,8 +53,8 @@ public class FibonacciAlgorithmsTest {
             long iterative = fib.fibonacciIterative(i);
             long recursive = fib.fibonacciRecursive(i);
 
-            assertEquals(iterative, recursive);
-            assertEquals(recursive, memorized);
+            Assert.assertEquals(iterative, recursive);
+            Assert.assertEquals(recursive, memorized);
         }
     }
 }

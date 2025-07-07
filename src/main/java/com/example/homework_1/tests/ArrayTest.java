@@ -15,7 +15,7 @@ public class ArrayTest {
 
         rep.append(runTest("Array shift Performance"));
 
-        //wtire to file
+        //write to file
         try(PrintWriter writer = new PrintWriter(new File("Performance_Test_Array.txt"))) {
             writer.write(rep.toString());
         } catch (IOException e) {

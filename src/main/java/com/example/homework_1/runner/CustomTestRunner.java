@@ -83,6 +83,7 @@ public class CustomTestRunner {
         try {
             runLifecycleMethods(testInstance, beforeEachMethods);
 
+            testMethod.setAccessible(true);
             if (testAnnotation.timeout() > 0) {
                 runTestWithTimeout(testInstance, testMethod, testAnnotation.timeout());
             } else {
@@ -164,6 +165,7 @@ public class CustomTestRunner {
 
     private void runLifecycleMethods(Object testInstance, List<Method> methods) throws Exception {
         for (Method method : methods) {
+
             method.invoke(testInstance);
         }
     }
