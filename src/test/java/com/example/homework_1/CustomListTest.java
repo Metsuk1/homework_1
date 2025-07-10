@@ -1,9 +1,8 @@
 package com.example.homework_1;
 
+import com.example.homework_1.hw03.CustomList;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class CustomListTest {
     private CustomList<?> list;

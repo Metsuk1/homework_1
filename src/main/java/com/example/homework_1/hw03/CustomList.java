@@ -1,4 +1,4 @@
-package com.example.homework_1;
+package com.example.homework_1.hw03;
 
 
 import java.util.*;

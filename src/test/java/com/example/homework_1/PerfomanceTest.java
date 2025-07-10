@@ -1,6 +1,8 @@
 package com.example.homework_1;
 
 
+import com.example.homework_1.hw03.CustomList;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
