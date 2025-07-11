@@ -11,7 +11,6 @@ import java.util.Queue;
 public class MyQueue <T> extends AbstractQueue<T> {
     private MyLinkedList<T> list;
 
-
     public MyQueue(MyLinkedList<T> list) {
         setList(list);
     }

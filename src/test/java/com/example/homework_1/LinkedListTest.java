@@ -63,6 +63,25 @@ public class LinkedListTest {
     }
 
     @Test
+    void test_addLast_and_getLast() {
+        list.addLast("x");
+        list.addLast("y");
+        list.addLast("z");
+
+        Assertions.assertEquals("z", list.getLast());
+        Assertions.assertEquals(3, list.size());
+    }
+
+    @Test
+    void test_add_on_emptyList() {
+        list.add("first");
+
+        Assertions.assertEquals("first", list.getFirst());
+        Assertions.assertEquals("first", list.getLast());
+        Assertions.assertEquals(1, list.size());
+    }
+
+    @Test
     void test_removeByIndex(){
         list.add("a");
         list.add("b");
@@ -88,5 +107,77 @@ public class LinkedListTest {
         list.add("b");
         list.add("c");
         Assertions.assertEquals("b",list.get(1));
+    }
+
+    @Test
+    void test_removeFirst_onSingleElement() {
+        list.add("only");
+        String removed = list.removeFirst();
+
+        Assertions.assertEquals("only", removed);
+        Assertions.assertTrue(list.isEmpty());
+    }
+
+    @Test
+    void test_removeLast_onSingleElement() {
+        list.add("single");
+        String removed = list.removeLast();
+
+        Assertions.assertEquals("single", removed);
+        Assertions.assertTrue(list.isEmpty());
+    }
+
+    @Test
+    void test_removeLast_multipleElements() {
+        list.add("1");
+        list.add("2");
+        list.add("3");
+
+        String removed = list.removeLast();
+
+        Assertions.assertEquals("3", removed);
+        Assertions.assertEquals("2", list.getLast());
+        Assertions.assertEquals(2, list.size());
+    }
+
+    @Test
+    void test_clear() {
+        list.add("a");
+        list.add("b");
+
+        list.clear();
+
+        Assertions.assertEquals(0, list.size());
+        Assertions.assertTrue(list.isEmpty());
+    }
+
+    @Test
+    void test_indexOf_and_lastIndexOf() {
+        list.add("a");
+        list.add("b");
+        list.add("a");
+
+        Assertions.assertEquals(0, list.indexOf("a"));
+        Assertions.assertEquals(2, list.lastIndexOf("a"));
+    }
+    @Test
+    void test_set_by_index() {
+        list.add("old");
+        list.set(0, "new");
+
+        Assertions.assertEquals("new", list.get(0));
+    }
+
+    @Test
+    void test_iterator_traversal() {
+        list.add("a");
+        list.add("b");
+        list.add("c");
+
+        StringBuilder sb = new StringBuilder();
+        for (String s : list) {
+            sb.append(s);
+        }
+        Assertions.assertEquals("abc", sb.toString());
     }
 }

@@ -81,15 +81,55 @@ public class MyLinkedList <T> implements List<T> {
     }
 
     public void addFirst(T element){
-        MyNode<T> node = head;
-        head = new MyNode<>(element);
-        node.setNext(head);
+        MyNode<T> newNode = new MyNode<>(element);
+        if(isEmpty()) {
+            head = tail = newNode;
+        }
+        else {
+            newNode.setNext(head);
+            head.setPrev(newNode);
+            head = newNode;
+        }
         size++;
     }
 
     public void addLast(T element){
         add(element);
     }
+
+    public T removeFirst(){
+        if(isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        T res = head.getData();
+        head = head.getNext();
+        if(head != null) {
+            head.setNext(null);
+        }else{
+            tail = null;
+        }
+        size--;
+
+        return res;
+    }
+
+    public T removeLast(){
+        if(isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        T res = tail.getData();
+        tail = tail.getPrev();
+        if(tail != null) {
+            tail.setPrev(null);
+        }else{
+            head = null;
+        }
+        size--;
+
+        return res;
+    }
+
+
 
     @Override
     public boolean add(T t) {

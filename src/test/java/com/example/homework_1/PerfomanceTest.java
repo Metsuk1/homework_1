@@ -2,6 +2,7 @@ package com.example.homework_1;
 
 
 import com.example.homework_1.hw03.CustomList;
+import com.example.homework_1.hw03.MyLinkedList;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class PerfomanceTest {
 
 
         rep.append(runTest("ArrayList",new ArrayList<>()));
-        rep.append(runTest("Linked List",new LinkedList<>()));
+        rep.append(runTest("MyLinked List",new MyLinkedList<>()));
         rep.append(runTest("CustomList",new CustomList<>()));
 
         //записываем все в файлик
