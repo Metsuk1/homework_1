@@ -1,15 +1,17 @@
 package com.example.homework_1.hw03;
 
+import lombok.Setter;
 
+@Setter
 public class MyStack<T> {
-    private CustomList<T> list;
+    private MyLinkedList<T> list;
 
-    public MyStack(CustomList<T> list) {
-        this.list = list;
+    public MyStack(MyLinkedList<T> list) {
+        setList(list);
     }
 
     public T push(T item) {
-        list.add(item);
+        list.addFirst(item);
         return item;
     }
 
@@ -22,13 +24,13 @@ public class MyStack<T> {
     }
 
     public T peek() {
-        return list.get(list.size()-1);
+        return list.getFirst();
     }
 
     public T pop() {
-        T tmp = list.get(list.size() - 1);
-        list.remove(list.size() - 1);
-        return tmp;
+        T value = list.getFirst();
+        list.remove(value);
+        return value;
     }
 
 }
