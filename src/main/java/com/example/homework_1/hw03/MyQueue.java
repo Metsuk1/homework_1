@@ -5,7 +5,6 @@ import lombok.Setter;
 import java.util.AbstractQueue;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Queue;
 
 @Setter
 public class MyQueue <T> extends AbstractQueue<T> {
