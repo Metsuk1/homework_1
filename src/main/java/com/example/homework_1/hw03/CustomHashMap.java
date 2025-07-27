@@ -3,10 +3,7 @@ package com.example.homework_1.hw03;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CustomHashMap <K,V> implements Map<K,V> {
     private HashNode<K,V>[] chainArr; // array of hash nodes
@@ -15,7 +12,7 @@ public class CustomHashMap <K,V> implements Map<K,V> {
 
     @Setter
     @Getter
-    private class HashNode<K,V> {
+    private static class HashNode<K,V> {
         K key;
         V value;
         HashNode<K,V> next;
@@ -173,17 +170,50 @@ public class CustomHashMap <K,V> implements Map<K,V> {
 
     @Override
     public Set<K> keySet() {
-        return Set.of();
+        Set<K> keys = new HashSet<>();
+
+        for(int i = 0 ; i < M; i++) {
+            HashNode<K,V> current = chainArr[i];
+
+            while(current != null) {
+                keys.add(current.getKey());
+                current = current.next;
+            }
+        }
+
+        return keys;
     }
 
     @Override
     public Collection<V> values() {
-        return List.of();
+        List<V> vals = new ArrayList<>();
+        for(int i = 0 ; i < M; i++) {
+            HashNode<K,V> current = chainArr[i];
+
+            while(current != null) {
+                vals.add(current.getValue());
+                current = current.next;
+            }
+
+        }
+
+        return vals;
     }
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        return Set.of();
+        Set<Entry<K, V>> entries = new HashSet<>();
+
+        for(int i = 0 ; i < M; i++) {
+            HashNode<K,V> current = chainArr[i];
+
+            while(current != null) {
+                entries.add(new AbstractMap.SimpleEntry<>(current.getKey(), current.getValue()));
+                current = current.next;
+            }
+        }
+
+        return entries;
     }
 
     private void checkValue(V value) {
