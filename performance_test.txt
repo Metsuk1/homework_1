@@ -1,0 +1,9 @@
+Thread Count	Method	Time (ms)
+1		Parallel Stream	51
+1		Manual Threads	20
+10		Parallel Stream	11
+10		Manual Threads	18
+100		Parallel Stream	27
+100		Manual Threads	19
+1000		Parallel Stream	214
+1000		Manual Threads	178
