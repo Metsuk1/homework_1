@@ -135,7 +135,6 @@ public class VirtualAndPlatformThreads {
         } catch (OutOfMemoryError e) {
             System.err.println("OutOfMemoryError: Cannot create " + reducedThreadCount + " platform threads");
             System.err.println("Current heap size: " + formatBytes(runtime.maxMemory()));
-            System.err.println("Try running with: java -Xmx20g -Xss256k ThreadComparison");
             return;
         }
 
@@ -175,7 +174,7 @@ public class VirtualAndPlatformThreads {
 
         System.out.println("\nCompute memory for PlatformThreads");
 
-        long defaultStackSize = 1024 * 1024; // 1MB по умолчанию в большинстве JVM
+        long defaultStackSize = 1024 * 1024;
         System.out.println("  size of stack for 1 thread " + formatBytes(defaultStackSize));
 
         long memoryFor8000Threads = 8000 * defaultStackSize;
