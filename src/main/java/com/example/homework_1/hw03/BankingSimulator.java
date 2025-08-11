@@ -31,6 +31,96 @@ public class BankingSimulator {
 
         System.out.println("\n4. Testing Unsafe version:");
         testBankUnsafe();
+
+        System.out.println("\n" + "=".repeat(60));
+        System.out.println("DEADLOCK DEMONSTRATIONS");
+        System.out.println("=".repeat(60));
+
+        System.out.println("\nDEADLOCK DEMO 1: Unordered Lock Acquisition");
+        demonstrateDeadlock1();
+
+        System.out.println("\nDEADLOCK DEMO 2: Nested Synchronized Blocks");
+        demonstrateDeadlock2();
+
+        System.out.println("\nDEADLOCK DEMO 3: Circular Waiting Chain");
+        demonstrateDeadlock3();
+
+    }
+
+    // DEADLOCK DEMO 1: Unordered lock acquisition
+    private static void demonstrateDeadlock1() {
+        TestDeadlocks.DeadlockDemo1_UnorderedLocks demo = new TestDeadlocks.DeadlockDemo1_UnorderedLocks(10);
+
+        Thread thread1 = Thread.ofVirtual().name("DeadlockThread-1").start(() -> {
+            demo.transferWithDeadlock(5, 3, 100);
+        });
+
+        Thread thread2 = Thread.ofVirtual().name("DeadlockThread-2").start(() -> {
+            demo.transferWithDeadlock(3, 5, 50);
+        });
+
+        try {
+            Thread.sleep(5000);
+            System.out.println("DEADLOCK OCCURRED! Threads are stuck waiting for each other.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    // DEADLOCK DEMO 2: Nested synchronized blocks
+    private static void demonstrateDeadlock2() {
+        TestDeadlocks.DeadlockDemo2_NestedSynchronized demo = new TestDeadlocks.DeadlockDemo2_NestedSynchronized();
+
+        Thread thread1 = Thread.ofVirtual().name("SyncThread-1").start(() -> {
+            demo.transferAtoB(100);
+        });
+
+        Thread thread2 = Thread.ofVirtual().name("SyncThread-2").start(() -> {
+            demo.transferBtoA(50);
+        });
+
+        try {
+            Thread.sleep(5000);
+            System.out.println("DEADLOCK OCCURRED! Nested synchronized blocks locked each other out.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    // DEADLOCK DEMO 3: Circular waiting chain
+    private static void demonstrateDeadlock3() {
+        TestDeadlocks.DeadlockDemo3_WaitingChain demo = new TestDeadlocks.DeadlockDemo3_WaitingChain();
+
+        Thread thread1 = Thread.ofVirtual().name("ChainThread-1").start(() -> {
+            try {
+                demo.operationABC();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        Thread thread2 = Thread.ofVirtual().name("ChainThread-2").start(() -> {
+            try {
+                demo.operationBCA();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        Thread thread3 = Thread.ofVirtual().name("ChainThread-3").start(() -> {
+            try {
+                demo.operationCAB();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        try {
+            Thread.sleep(5000);
+            System.out.println("DEADLOCK OCCURRED! Circular waiting chain created a deadlock.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private static void testBankSynchronized() {
