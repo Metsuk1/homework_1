@@ -1,4 +1,4 @@
-package com.example.homework_1;
+package com.example.homework_1.hw03;
 
 
 import java.util.*;
@@ -41,24 +41,16 @@ public class CustomList <T> implements List<T> {
     public Iterator<T> iterator() {
         return new Iterator<>() {
 
-            private int index = 0;
-            private int lastReturnedIndex = -1;
+            private int i = 0;
 
             @Override
             public boolean hasNext() {
-                return index  < length;
+                return i  < length;
             }
 
             @Override
             public T next() {
-                return get(index++);
-            }
-
-            @Override
-            public void remove() {
-                if(index < 0)throw new IllegalStateException();
-                CustomList.this.remove(--index);
-                lastReturnedIndex = -1;
+                return get(i++);
             }
 
         };
@@ -106,28 +98,14 @@ public class CustomList <T> implements List<T> {
 
     @Override
     public boolean addAll(int index, Collection<? extends T> c) {
-       checkIndex(index);
+        if(c.isEmpty()) {
+            return false;
+        }
+        for(T o : c) {
+            add(index, o);
+        }
 
-       if(c == null) {
-           throw new NullPointerException("Collection cannot be null");
-       }
-
-       if(c.isEmpty()) {
-           return false;
-       }
-
-       while(length + c.size() > elements.length) {
-           increaseCapacity();
-       }
-       System.arraycopy(elements, index, elements, index + c.size(), length - index);
-
-       int i = index;
-       for(T elem : c) {
-           elements[i++] = elem;
-       }
-       length += c.size();
-
-       return true;
+        return true;
     }
 
     @Override
@@ -183,83 +161,16 @@ public class CustomList <T> implements List<T> {
 
     @Override
     public ListIterator listIterator() {
-        return listIterator(0);
+        return null;
     }
 
     @Override
-    public ListIterator<T> listIterator(int index) {
-        checkIndex(index);
-
-        return new ListIterator<T>() {
-            private int cursor = index;
-            private int lastRet = -1;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < length;
-            }
-
-            @Override
-            public T next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException();
-                }
-                lastRet = cursor;
-                return elements[cursor++];
-            }
-
-            @Override
-            public boolean hasPrevious() {
-                return cursor > 0;
-            }
-
-            @Override
-            public T previous() {
-                if (!hasPrevious()) {
-                    throw new NoSuchElementException();
-                }
-                lastRet = --cursor;
-                return elements[cursor];
-            }
-
-            @Override
-            public int nextIndex() {
-                return cursor;
-            }
-
-            @Override
-            public int previousIndex() {
-                return cursor - 1;
-            }
-
-            @Override
-            public void remove() {
-                if (lastRet < 0) {
-                    throw new IllegalStateException();
-                }
-                CustomList.this.remove(lastRet);
-                cursor = lastRet;
-                lastRet = -1;
-            }
-
-            @Override
-            public void set(T e) {
-                if (lastRet < 0) {
-                    throw new IllegalStateException();
-                }
-                CustomList.this.set(lastRet, e);
-            }
-
-            @Override
-            public void add(T e) {
-                CustomList.this.add(cursor++, e);
-                lastRet = -1;
-            }
-        };
+    public ListIterator listIterator(int index) {
+        return null;
     }
 
     @Override
-    public List<T> subList(int fromIndex, int toIndex) {
+    public List subList(int fromIndex, int toIndex) {
         return List.of();
     }
 

@@ -1,0 +1,25 @@
+Performance Test Array
+Testing Array shift Performance
+Size 1000
+Shift: 1    | System.arraycopy: 269900   ns | Manual Loop: 22900    ns
+Shift: 10   | System.arraycopy: 1000     ns | Manual Loop: 19300    ns
+Shift: 100  | System.arraycopy: 1000     ns | Manual Loop: 18000    ns
+
+Size 10000
+Shift: 1    | System.arraycopy: 3400     ns | Manual Loop: 191400   ns
+Shift: 10   | System.arraycopy: 2200     ns | Manual Loop: 193000   ns
+Shift: 100  | System.arraycopy: 2300     ns | Manual Loop: 189500   ns
+Shift: 1000 | System.arraycopy: 7300     ns | Manual Loop: 180100   ns
+
+Size 100000
+Shift: 1    | System.arraycopy: 58000    ns | Manual Loop: 1058500  ns
+Shift: 10   | System.arraycopy: 32000    ns | Manual Loop: 389400   ns
+Shift: 100  | System.arraycopy: 27800    ns | Manual Loop: 191700   ns
+Shift: 1000 | System.arraycopy: 28400    ns | Manual Loop: 185600   ns
+
+Size 1000000
+Shift: 1    | System.arraycopy: 550500   ns | Manual Loop: 493000   ns
+Shift: 10   | System.arraycopy: 453900   ns | Manual Loop: 359900   ns
+Shift: 100  | System.arraycopy: 419300   ns | Manual Loop: 365000   ns
+Shift: 1000 | System.arraycopy: 479200   ns | Manual Loop: 717700   ns
+
