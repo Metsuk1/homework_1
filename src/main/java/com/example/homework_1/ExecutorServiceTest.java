@@ -1,7 +1,10 @@
+package com.example.homework_1;
+
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ExecutorServiceTest {

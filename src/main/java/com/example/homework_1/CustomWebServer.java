@@ -1,3 +1,5 @@
+package com.example.homework_1;
+
 import lombok.SneakyThrows;
 
 import java.io.*;
@@ -5,7 +7,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLOutput;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -194,7 +195,7 @@ public class CustomWebServer {
             virtualServer.start();
             platformServer.start();
 
-            System.out.println("CustomWebServer started");
+            System.out.println("com.example.homework_1.CustomWebServer started");
             System.out.println("Virtual:  http://localhost:8080");
             System.out.println("Platform: http://localhost:8081");
 

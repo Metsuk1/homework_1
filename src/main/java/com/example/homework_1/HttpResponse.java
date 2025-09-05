@@ -1,3 +1,5 @@
+package com.example.homework_1;
+
 public class HttpResponse {
     int statusCode;
     String statusText;

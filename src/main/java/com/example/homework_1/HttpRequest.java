@@ -1,3 +1,5 @@
+package com.example.homework_1;
+
 import java.util.Map;
 
 public class HttpRequest {
@@ -31,7 +33,7 @@ public class HttpRequest {
 
     @Override
     public String toString() {
-        return "HttpRequest{" +
+        return "com.example.homework_1.HttpRequest{" +
                 "method='" + method + '\'' +
                 ", path='" + path + '\'' +
                 ", headers=" + headers +
