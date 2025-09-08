@@ -1,9 +1,7 @@
-package com.example.homework_1.hw03;
+package com.example.homework_1.hw03.lists;
 
 
 import java.util.*;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class CustomList <T> implements List<T> {
     private int length;

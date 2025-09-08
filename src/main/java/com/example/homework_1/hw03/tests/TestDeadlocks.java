@@ -1,11 +1,11 @@
-package com.example.homework_1.hw03;
+package com.example.homework_1.hw03.tests;
 
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class TestDeadlocks {
 
-    static class DeadlockDemo1_UnorderedLocks {
+    public static class DeadlockDemo1_UnorderedLocks {
         private final ReentrantLock[] locks;
         private final long[] accounts;
         private final Random random = new Random();
@@ -50,7 +50,7 @@ public class TestDeadlocks {
     }
 
 
-    static class DeadlockDemo2_NestedSynchronized {
+    public static class DeadlockDemo2_NestedSynchronized {
         private final Object lock1 = new Object();
         private final Object lock2 = new Object();
         private long balance1 = 1000;
@@ -99,7 +99,7 @@ public class TestDeadlocks {
         }
     }
 
-    static class DeadlockDemo3_WaitingChain {
+    public static class DeadlockDemo3_WaitingChain {
         private final ReentrantLock lockA = new ReentrantLock();
         private final ReentrantLock lockB = new ReentrantLock();
         private final ReentrantLock lockC = new ReentrantLock();

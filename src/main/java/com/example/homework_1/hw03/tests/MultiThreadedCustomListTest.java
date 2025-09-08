@@ -1,4 +1,8 @@
-package com.example.homework_1.hw03;
+package com.example.homework_1.hw03.tests;
+
+import com.example.homework_1.hw03.lists.CustomList;
+import com.example.homework_1.hw03.lists.ReadWriteLockCustomList;
+import com.example.homework_1.hw03.lists.SynchronizedCustomList;
 
 import java.util.ArrayList;
 import java.util.List;

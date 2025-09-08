@@ -1,5 +1,11 @@
 package com.example.homework_1.hw03;
 
+import com.example.homework_1.hw03.tests.TestDeadlocks;
+import com.example.homework_1.hw03.types_of_banks.BankAtomic;
+import com.example.homework_1.hw03.types_of_banks.BankSynchronized;
+import com.example.homework_1.hw03.types_of_banks.BankUnsafe;
+import com.example.homework_1.hw03.types_of_banks.BankWithLocks;
+
 import java.math.BigInteger;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;

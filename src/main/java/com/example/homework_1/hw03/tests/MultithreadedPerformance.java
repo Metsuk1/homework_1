@@ -1,8 +1,7 @@
-package com.example.homework_1.hw03;
+package com.example.homework_1.hw03.tests;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 public class MultithreadedPerformance {
