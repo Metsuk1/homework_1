@@ -1,8 +1,11 @@
 package com.example.homework_1;
 
+import com.example.homework_1.annotations.*;
+import jakarta.servlet.ServletOutputStream;
 import lombok.SneakyThrows;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -20,6 +23,8 @@ public class CustomWebServer {
     private long startTime;
     private long requestCount = 0;
     private boolean keepAlive = true;
+    private final Map<String, HandlerMethod> routeHandlers = new HashMap<>();
+
 
     public CustomWebServer(int port, int threadPoolSize, boolean useVirtualThreads) {
         this.port = port;
@@ -106,47 +111,25 @@ public class CustomWebServer {
         requestCount++;
 
         try {
-            //home page
-            if("GET".equals(request.getMethod()) && "/".equals(request.getPath())) {
-                Path file = Path.of("./static/index.html");
-                if(Files.exists(file)){
-                    return HttpResponse.ok(Files.readAllBytes(file),"text/html");
+            String key = request.getMethod() + ":" + request.getPath();
+            HandlerMethod handlerMethod = routeHandlers.get(key);
+
+            if(handlerMethod != null) {
+                Object result = handlerMethod.method.invoke(handlerMethod.controller);
+
+                if(result instanceof String str){
+                    return HttpResponse.ok(str.getBytes(),"text/plain");
+                } else if (result instanceof byte[] bytes) {
+                    return HttpResponse.ok(bytes,"application/octet-stream");
+                } else if (result != null) {
+                    String json = result.toString();
+                    return HttpResponse.ok(json.getBytes(),"application/json");
                 }else{
-                    return HttpResponse.notFound();
+                    return HttpResponse.ok("".getBytes(), "text/plain");
                 }
             }
 
-            // static files
-            if (request.getPath().startsWith("/static/")) {
-                Path file = Path.of("." + request.getPath());
-                if (Files.exists(file)) {
-                    String mime = guessMimeType(file);
-                    return HttpResponse.ok(Files.readAllBytes(file), mime);
-                } else {
-                    return HttpResponse.notFound();
-                }
-            }
-
-            // /api/time
-            if ("GET".equals(request.getMethod()) && "/api/time".equals(request.getPath())) {
-                String json = "{\"time\":\"" + Instant.now().toString() + "\"}";
-                return HttpResponse.ok(json.getBytes(), "application/json");
-            }
-
-
-            // /api/stats
-            if ("GET".equals(request.getMethod()) && "/api/stats".equals(request.getPath())) {
-                long uptime = Duration.between(Instant.ofEpochMilli(startTime), Instant.now()).toSeconds();
-                String json = String.format("{\"requests\":%d,\"uptime_sec\":%d}", requestCount, uptime);
-                return HttpResponse.ok(json.getBytes(), "application/json");
-            }
-
-
-            // /api/echo
-            if ("POST".equals(request.getMethod()) && "/api/echo".equals(request.getPath())) {
-                return HttpResponse.ok(request.getBody().getBytes(), "application/json");
-            }
-
+            //if route not found -> 404
             return HttpResponse.notFound();
         }catch (Exception e) {
             e.printStackTrace();
@@ -187,15 +170,57 @@ public class CustomWebServer {
         }
     }
 
+    public void registerController(Object controller) {
+        Class<?> clas = controller.getClass();
+
+        if (!clas.isAnnotationPresent(CustomRestController.class)) {
+            System.out.println(clas.getName() + " is not a @CustomRestController");
+            return;
+        }
+
+        for (Method method : clas.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(CustomGetMapping.class)) {
+                CustomGetMapping mapping = method.getAnnotation(CustomGetMapping.class);
+                String key = "GET:" + mapping.value();
+                routeHandlers.put(key, new HandlerMethod(controller, method, mapping.value(), "GET"));
+            }
+            if (method.isAnnotationPresent(CustomPostMapping.class)) {
+                CustomPostMapping mapping = method.getAnnotation(CustomPostMapping.class);
+                String key = "POST:" + mapping.value();
+                routeHandlers.put(key, new HandlerMethod(controller, method, mapping.value(), "POST"));
+            }
+            if(method.isAnnotationPresent(CustomPutMapping.class)) {
+                CustomPutMapping mapping = method.getAnnotation(CustomPutMapping.class);
+                String key = "PUT:" + mapping.value();
+                routeHandlers.put(key, new HandlerMethod(controller, method, mapping.value(), "PUT"));
+            }
+            if(method.isAnnotationPresent(CustomPatchMapping.class)) {
+                CustomPatchMapping mapping = method.getAnnotation(CustomPatchMapping.class);
+                String key = "PATCH:" + mapping.value();
+                routeHandlers.put(key, new HandlerMethod(controller, method, mapping.value(), "PATCH"));
+            }
+            if(method.isAnnotationPresent(CustomDeleteMapping.class)) {
+                CustomDeleteMapping mapping = method.getAnnotation(CustomDeleteMapping.class);
+                String key = "DELETE:" + mapping.value();
+                routeHandlers.put(key, new HandlerMethod(controller, method, mapping.value(), "DELETE"));
+            }
+        }
+    }
+
+    @SneakyThrows
     public static void main(String[] args) {
         CustomWebServer virtualServer = new CustomWebServer(8080,50,true);
         CustomWebServer platformServer = new CustomWebServer(8081,50,false);
+
+        Method method = CustomWebServer.class.getMethod("registerController",Object.class);
+        method.invoke(virtualServer,new Object());
+
 
         try{
             virtualServer.start();
             platformServer.start();
 
-            System.out.println("com.example.homework_1.CustomWebServer started");
+            System.out.println("CustomWebServer started");
             System.out.println("Virtual:  http://localhost:8080");
             System.out.println("Platform: http://localhost:8081");
 
