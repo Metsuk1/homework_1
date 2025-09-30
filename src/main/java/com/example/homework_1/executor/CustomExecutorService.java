@@ -1,7 +1,6 @@
-package com.example.homework_1;
+package com.example.homework_1.executor;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,38 +9,95 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Getter
-@Setter
 public class CustomExecutorService implements ExecutorService {
-    private int corePoolSize;
-    private boolean useVirtualThreads;
-    private BlockingQueue<Runnable> workQueue;
+    private final int corePoolSize;
+    private final boolean useVirtualThreads;
+    private final String threadNamePrefix;
+    private final  BlockingQueue<Runnable> workQueue;
+
+    //these fields I will initialize in specific method
     private List<Thread> poolWorkers;
     private AtomicBoolean shutdown;
     private CountDownLatch shutdownLatch;
     private ThreadFactory threadFactory;
+    private volatile boolean started = false;
 
-    public CustomExecutorService(int corePoolSize, boolean useVirtualThreads) {
+    //package Constructor
+   CustomExecutorService(int corePoolSize, boolean useVirtualThreads,String threadNamePrefix, BlockingQueue<Runnable> workQueue) {
+        // validation
         if (corePoolSize <= 0) {
             throw new IllegalArgumentException("corePoolSize should be greater than 0");
         }
-        setCorePoolSize(corePoolSize);
-        setUseVirtualThreads(useVirtualThreads);
-        setWorkQueue(new LinkedBlockingQueue<>());
+
+        if(threadNamePrefix == null) {
+            throw new IllegalArgumentException("threadNamePrefix cannot be null");
+        }
+
+       this.corePoolSize = corePoolSize;
+       this.useVirtualThreads = useVirtualThreads;
+       this.threadNamePrefix = threadNamePrefix;
+       this.workQueue = workQueue != null ? workQueue : new LinkedBlockingQueue<>();
+
+    }
+
+    /*
+    It's the specific method for creation complex objects
+     */
+    public CustomExecutorService start(){
+       if(started) {
+           throw new IllegalStateException("CustomExecutorService already started");
+       }
+
+        // initialization complex objects
         this.poolWorkers = new ArrayList<>();
         this.shutdown = new AtomicBoolean(false);
         this.shutdownLatch = new CountDownLatch(corePoolSize);
+        this.threadFactory = createThreadFactory();
 
+        //starting workers
+        initializeWorkers();
+
+        this.started = true;
+
+        return this;
+    }
+
+    /*
+    static method for creation Builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Factory methods
+    public static CustomExecutorService newPlatformThreadPool(int nThreads) {
+        return builder()
+                .corePoolSize(nThreads)
+                .useVirtualThreads(false)
+                .threadNamePrefix("platform-pool")
+                .buildAndStart();
+    }
+
+    public static CustomExecutorService newVirtualThreadPool(int nThreads) {
+        return builder()
+                .corePoolSize(nThreads)
+                .useVirtualThreads(true)
+                .threadNamePrefix("virtual-pool")
+                .buildAndStart();
+    }
+
+    //Creation ThreadFactory
+    private ThreadFactory createThreadFactory() {
         if (useVirtualThreads) {
-            this.threadFactory = Thread.ofVirtual()
-                    .name("custom-virtual-worker-", 0)
+            return Thread.ofVirtual()
+                    .name(threadNamePrefix + "-", 0)
                     .factory();
         } else {
-            this.threadFactory = Thread.ofPlatform()
-                    .name("custom-platform-worker-", 0)
+            return Thread.ofPlatform()
+                    .name(threadNamePrefix + "-", 0)
                     .daemon(false)
                     .factory();
         }
-        initializeWorkers();
     }
 
     private void initializeWorkers() {
@@ -52,6 +108,16 @@ public class CustomExecutorService implements ExecutorService {
         }
     }
 
+    //Check initialization before use
+    protected void ensureStarted() {
+        if (!started) {
+            throw new IllegalStateException("ExecutorService not started. Call start() first.");
+        }
+    }
+
+    /*
+    Worker threads
+     */
     private class WorkerRunnable implements Runnable {
 
         @Override
@@ -91,6 +157,7 @@ public class CustomExecutorService implements ExecutorService {
 
     @Override
     public void shutdown() {
+        ensureStarted();
         shutdown.set(true);
     }
 
@@ -109,16 +176,18 @@ public class CustomExecutorService implements ExecutorService {
 
     @Override
     public boolean isShutdown() {
-        return shutdown.get();
+        return started && shutdown.get();
     }
 
     @Override
     public boolean isTerminated() {
-        return shutdown.get() && shutdownLatch.getCount() == 0;
+        return started && shutdown.get() && shutdownLatch.getCount() == 0;
     }
 
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        ensureStarted();
+
         if (!shutdown.get()) {
             return false;
         }
@@ -127,6 +196,8 @@ public class CustomExecutorService implements ExecutorService {
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
+        ensureStarted();
+
         if(task == null) {
             throw new NullPointerException();
         }
@@ -138,6 +209,8 @@ public class CustomExecutorService implements ExecutorService {
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
+        ensureStarted();
+
         if(task == null) {
             throw new NullPointerException();
         }
@@ -154,7 +227,26 @@ public class CustomExecutorService implements ExecutorService {
 
     @Override
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
-        return List.of();
+        ensureStarted();
+
+        if (tasks == null) {
+            throw new NullPointerException();
+        }
+
+        List<Future<T>> futures = new ArrayList<>();
+        for (Callable<T> task : tasks) {
+            futures.add(submit(task));
+        }
+
+        for (Future<T> future : futures) {
+            try {
+                future.get();
+            } catch (ExecutionException e) {
+
+            }
+        }
+
+        return futures;
     }
 
     @Override
@@ -164,6 +256,8 @@ public class CustomExecutorService implements ExecutorService {
 
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> collection) throws InterruptedException, ExecutionException {
+        ensureStarted();
+
         List<Future<T>> tasks = new ArrayList<>();
         for (var task : collection) {
             var future = submit(task);
@@ -175,6 +269,7 @@ public class CustomExecutorService implements ExecutorService {
                     return future.get();
                 }
             }
+            Thread.sleep(10);
         }
     }
 
@@ -185,6 +280,8 @@ public class CustomExecutorService implements ExecutorService {
 
     @Override
     public void execute(Runnable command) {
+        ensureStarted();
+
         if(command == null) {
             throw new NullPointerException("Command is null");
         }
@@ -200,39 +297,61 @@ public class CustomExecutorService implements ExecutorService {
     }
 
     private static class VirtualThreadPerTaskExecutor extends CustomExecutorService {
-        private final AtomicBoolean shutdown = new AtomicBoolean(false);
+        private final AtomicBoolean virtualShutdown = new AtomicBoolean(false);
 
         public VirtualThreadPerTaskExecutor() {
-            super(1, true);
+            // Вызываем package-private конструктор с минимальными параметрами
+            super(1, true, "virtual-per-task", new LinkedBlockingQueue<>());
+            super.shutdown = new AtomicBoolean(false);
+        }
+
+        @Override
+        public CustomExecutorService start() {
+            super.started = true;
+            return this;
         }
 
         @Override
         public void execute(Runnable command) {
-            if(command == null) {
+            if (command == null) {
                 throw new NullPointerException("command can't be null");
             }
-            if(shutdown.get()) {
+            if (virtualShutdown.get()) {
                 throw new RejectedExecutionException("Executor shutdown");
             }
-            //create new virtual thread for each task
+
+            // create new virtual thread for each task
             Thread.ofVirtual()
-                    .name("Virtual task thread ")
+                    .name("virtual-task-thread")
                     .start(command);
         }
 
         @Override
         public void shutdown() {
-            shutdown.set(true);
+            virtualShutdown.set(true);
+            super.shutdown.set(true);
         }
 
         @Override
-        public boolean isShutdown(){
-            return shutdown.get();
+        public boolean isShutdown() {
+            return virtualShutdown.get();
         }
 
         @Override
         public boolean isTerminated() {
-            return shutdown.get();
+            return virtualShutdown.get();
+        }
+
+        @Override
+        public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+            Thread.sleep(unit.toMillis(timeout));
+            return isTerminated();
+        }
+
+        @Override
+        protected void ensureStarted() {
         }
     }
+
+
 }

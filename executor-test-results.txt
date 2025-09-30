@@ -2,19 +2,19 @@
 === Test 1: Performance Comparison ===
 
 --- Pool Size = 10 ---
-Platform time: 15475 ms, Virtual time: 16445 ms
+Platform time: 17089 ms, Virtual time: 16917 ms
 Memory used after poolSize=10: 5 MB
 
 --- Pool Size = 50 ---
-Platform time: 4199 ms, Virtual time: 3926 ms
+Platform time: 3640 ms, Virtual time: 4087 ms
 Memory used after poolSize=50: 5 MB
 
 --- Pool Size = 100 ---
-Platform time: 2624 ms, Virtual time: 2598 ms
+Platform time: 2594 ms, Virtual time: 2582 ms
 Memory used after poolSize=100: 5 MB
 
 --- Pool Size = 500 ---
-Platform time: 1436 ms, Virtual time: 1353 ms
+Platform time: 1368 ms, Virtual time: 1329 ms
 Memory used after poolSize=500: 5 MB
 
 === Test 2: Concurrent Execution ===
@@ -23,25 +23,32 @@ Virtual threads counter = 1000
 
 === Test 3: Shutdown Behavior ===
 Task 2 done
-Task 3 done
 Task 4 done
+Task 3 done
 Task 1 done
 Task 0 done
 Task 6 done
-Task 5 done
 Task 7 done
-Task 9 done
 Task 8 done
+Task 5 done
+Task 9 done
 Task 12 done
-Task 10 done
-Task 11 done
 Task 14 done
 Task 13 done
-Task 15 done
-Task 16 done
+Task 11 done
+Task 10 done
+Task 19 done
 Task 18 done
 Task 17 done
-Task 19 done
+Task 16 done
+Task 15 done
+Is shutdown: true
+Is terminated: true
+Terminated within timeout: true
+Correctly rejected new task after shutdown.
+
+=== Test 4: Virtual Thread Per Task Executor ===
+VirtualThreadPerTaskExecutor counter = 1000
 Is shutdown: true
 Is terminated: true
 Terminated within timeout: true

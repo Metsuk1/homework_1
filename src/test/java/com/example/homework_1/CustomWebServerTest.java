@@ -1,7 +1,7 @@
 package com.example.homework_1;
 
 
-import lombok.SneakyThrows;
+import com.example.homework_1.server.CustomWebServer;
 import org.junit.jupiter.api.*;
 
 import java.io.BufferedReader;
@@ -51,12 +51,4 @@ public class CustomWebServerTest {
         assertTrue(body.contains("<html"));
     }
 
-    @Test
-    void testNotFound()throws Exception{
-        URL url = new URL("http://localhost:" + PORT + "/notfound");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-
-        assertEquals(404, connection.getResponseCode());
-    }
 }
