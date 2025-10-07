@@ -16,7 +16,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @CustomGetMapping()
+    @CustomGetMapping
     public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
@@ -26,7 +26,7 @@ public class UserController {
         return userService.getUserById(id);
     }
 
-    @CustomPostMapping("")
+    @CustomPostMapping
     public UserDto createUser(@CustomRequestBody UserDto user) {
         return userService.createUser(user);
     }

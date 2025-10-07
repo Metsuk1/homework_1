@@ -22,7 +22,7 @@ public class Main {
             System.out.println("CustomWebServer started");
             System.out.println("REST API server started:  http://localhost:8080");
 
-            Thread.sleep(60_000);
+            Thread.sleep(12_0000);
 
         }catch (Exception e){
             e.printStackTrace();

@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,7 +44,7 @@ public class RequestHandler {
         }
 
         String body = "";
-        if ("POST".equals(method) && headers.containsKey("content-length")) {
+        if ("POST".equals(method) || "PUT".equals(method) || "PATCH".equals(method)  && headers.containsKey("content-length")) {
             int length;
             try {
                 length = Integer.parseInt(headers.get("content-length"));
@@ -66,7 +67,22 @@ public class RequestHandler {
             String rawPath = request.getPath();
             String pathOnly = rawPath.contains("?") ? rawPath.substring(0, rawPath.indexOf("?")) : rawPath;
             String key = request.getMethod() + ":" + pathOnly;
+
             HandlerMethod handlerMethod = routeHandlers.get(key);
+
+            // If no exact match, try matching with path variables
+            if (handlerMethod == null) {
+                for (Map.Entry<String, HandlerMethod> entry : routeHandlers.entrySet()) {
+                    String routeKey = entry.getKey();
+                    String routeMethod = routeKey.substring(0, routeKey.indexOf(":"));
+                    String routePath = routeKey.substring(routeKey.indexOf(":") + 1);
+                    if (matchesPath(request.getMethod(), pathOnly, routeMethod, routePath)) {
+                        handlerMethod = entry.getValue();
+                        key = routeKey;
+                        break;
+                    }
+                }
+            }
 
             // Handle static resources
             if (handlerMethod == null && request.getMethod().equals("GET")) {
@@ -77,6 +93,11 @@ public class RequestHandler {
                     String mimeType = Files.probeContentType(filePath);
                     return HttpResponse.ok(content, mimeType != null ? mimeType : "text/html");
                 }
+                return HttpResponse.notFound();
+            }
+
+            if (handlerMethod == null) {
+                System.out.println("No handler found for: " + key); // Debug logging
                 return HttpResponse.notFound();
             }
 
@@ -126,12 +147,43 @@ public class RequestHandler {
                 return HttpResponse.ok(json.getBytes(), "application/json");
             }
 
-        } catch (IllegalArgumentException e) {
+        }catch (InvocationTargetException e) {
+            if (e.getCause() instanceof IllegalArgumentException) {
+                return HttpResponse.badRequest(e.getCause().getMessage());
+            }
+            e.printStackTrace();
+
+            return HttpResponse.serverError();
+        }catch (IllegalArgumentException e) {
             return HttpResponse.badRequest("Invalid parameter types: " + e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             return HttpResponse.serverError();
         }
+    }
+
+
+    private boolean matchesPath(String requestMethod, String requestPath, String routeMethod, String routePath) {
+        if (!requestMethod.equals(routeMethod)) {
+            return false;
+        }
+
+        String[] requestParts = requestPath.split("/");
+        String[] routeParts = routePath.split("/");
+
+        if (requestParts.length != routeParts.length) {
+            return false;
+        }
+
+        for (int i = 0; i < routeParts.length; i++) {
+            if (routeParts[i].startsWith("{") && routeParts[i].endsWith("}")) {
+                continue; // Path variable, accept any value
+            }
+            if (!routeParts[i].equals(requestParts[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private Object convertToType(String value, Class<?> targetType) {
