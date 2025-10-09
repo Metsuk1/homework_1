@@ -10,10 +10,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class UserService {
-    private final Map<Long, User> users = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, User> users = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(1);
 
-    public List<UserDto> getAllUsers() {
+    public synchronized List<UserDto> getAllUsers() {
         List<UserDto> dtos = new ArrayList<>();
         for (User user : users.values()) {
             UserDto dto = new UserDto();
@@ -25,7 +25,7 @@ public class UserService {
         return dtos;
     }
 
-    public UserDto getUserById(Long id) {
+    public synchronized UserDto getUserById(Long id) {
         User user = users.get(id);
         if (user == null) {
             throw new IllegalArgumentException("User with ID " + id + " not found");
@@ -37,7 +37,7 @@ public class UserService {
         return dto;
     }
 
-    public UserDto createUser(UserDto dto) {
+    public synchronized UserDto createUser(UserDto dto) {
         dto.validate();
         User user = new User();
         user.setId(idGenerator.getAndIncrement());
@@ -48,7 +48,7 @@ public class UserService {
         return dto;
     }
 
-    public UserDto updateUser(Long id, UserDto dto) {
+    public synchronized UserDto updateUser(Long id, UserDto dto) {
         User user = users.get(id);
         if (user == null) {
             throw new IllegalArgumentException("User with ID " + id + " not found");
@@ -61,7 +61,7 @@ public class UserService {
         return dto;
     }
 
-    public UserDto patchUser(Long id, Map<String, Object> updates) {
+    public synchronized UserDto patchUser(Long id, Map<String, Object> updates) {
         User user = users.get(id);
         if (user == null) {
             throw new IllegalArgumentException("User with ID " + id + " not found");
@@ -88,7 +88,7 @@ public class UserService {
         return dto;
     }
 
-    public void deleteUser(Long id) {
+    public synchronized void deleteUser(Long id) {
         if (!users.containsKey(id)) {
             throw new IllegalArgumentException("User with ID " + id + " not found");
         }

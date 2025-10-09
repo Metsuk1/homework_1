@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 public class Main {
     public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         // Initialize server
-        CustomWebServer virtualServer = new CustomWebServer(8080,50,true);
+        CustomWebServer virtualServer = new CustomWebServer(8080,200,true);
 
         UserService userService = new UserService();
         UserController userController = new UserController(userService);
