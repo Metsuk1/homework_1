@@ -1,0 +1,49 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Build Docker image
+        run: docker build -t custom-webserver:latest .
+
+      - name: Save Docker image
+        run: docker save custom-webserver:latest | gzip > custom-webserver.tar.gz
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.5
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: root
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "custom-webserver.tar.gz,docker-compose.yml"
+          target: "/opt/webserver"
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: root
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /opt/webserver
+            docker load < custom-webserver.tar.gz
+            docker-compose down
+            docker-compose up -d
+            docker ps

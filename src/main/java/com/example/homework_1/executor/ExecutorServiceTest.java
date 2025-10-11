@@ -1,4 +1,4 @@
-package com.example.homework_1;
+package com.example.homework_1.executor;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -14,10 +14,11 @@ public class ExecutorServiceTest {
         try {
             writer = new PrintWriter(new FileWriter("executor-test-results.txt", false));
 
-            // Запускаем тесты
+            // Run tests
             testPerformanceComparison();
             testConcurrentExecution();
             testShutdownBehavior();
+            testVirtualThreadPerTaskExecutor();
 
             System.out.println("success");
         } finally {
@@ -38,7 +39,7 @@ public class ExecutorServiceTest {
 
             // Platform threads
             long start = System.currentTimeMillis();
-            ExecutorService platformExec = new CustomExecutorService(poolSize, false);
+            ExecutorService platformExec = CustomExecutorService.newPlatformThreadPool(poolSize);
             submitSleepTasks(platformExec, taskCount, sleepMillis);
             platformExec.shutdown();
             platformExec.awaitTermination(1, TimeUnit.HOURS);
@@ -46,7 +47,7 @@ public class ExecutorServiceTest {
 
             // Virtual threads
             start = System.currentTimeMillis();
-            ExecutorService virtualExec = new CustomExecutorService(poolSize, true);
+            ExecutorService virtualExec = CustomExecutorService.newVirtualThreadPool(poolSize);
             submitSleepTasks(virtualExec, taskCount, sleepMillis);
             virtualExec.shutdown();
             virtualExec.awaitTermination(1, TimeUnit.HOURS);
@@ -67,7 +68,10 @@ public class ExecutorServiceTest {
             executor.execute(() -> {
                 try {
                     Thread.sleep(sleepMillis);
-                } catch (InterruptedException ignored) {
+                } catch (InterruptedException e) {
+                    // Explicitly silenced: the test intentionally ignores interruption
+                    Thread.currentThread().interrupt(); // restore interrupt flag
+                    log("Task interrupted (explicitly silenced): " + e.getMessage());
                 }
             });
         }
@@ -81,7 +85,7 @@ public class ExecutorServiceTest {
         AtomicInteger counter = new AtomicInteger(0);
 
         // Platform threads
-        ExecutorService platformExec = new CustomExecutorService(50, false);
+        ExecutorService platformExec = CustomExecutorService.newPlatformThreadPool(50);
         runIncrementTasks(platformExec, taskCount, counter);
         platformExec.shutdown();
         platformExec.awaitTermination(1, TimeUnit.MINUTES);
@@ -89,7 +93,7 @@ public class ExecutorServiceTest {
 
         // Virtual threads
         counter.set(0);
-        ExecutorService virtualExec = new CustomExecutorService(50, true);
+        ExecutorService virtualExec = CustomExecutorService.newVirtualThreadPool(50);
         runIncrementTasks(virtualExec, taskCount, counter);
         virtualExec.shutdown();
         virtualExec.awaitTermination(1, TimeUnit.MINUTES);
@@ -106,7 +110,7 @@ public class ExecutorServiceTest {
     private static void testShutdownBehavior() throws InterruptedException {
         log("\n=== Test 3: Shutdown Behavior ===");
 
-        ExecutorService exec = new CustomExecutorService(5, false);
+        ExecutorService exec = CustomExecutorService.newPlatformThreadPool(5);
 
         // Submit tasks
         for (int i = 0; i < 20; i++) {
@@ -119,6 +123,38 @@ public class ExecutorServiceTest {
                 }
             });
         }
+
+        // Shutdown
+        exec.shutdown();
+        boolean terminated = exec.awaitTermination(2, TimeUnit.SECONDS);
+        log("Is shutdown: " + exec.isShutdown());
+        log("Is terminated: " + exec.isTerminated());
+        log("Terminated within timeout: " + terminated);
+
+        // Try submitting new task -> should throw exception
+        try {
+            exec.execute(() -> log("Should not run"));
+        } catch (RejectedExecutionException e) {
+            log("Correctly rejected new task after shutdown.");
+        }
+    }
+
+    // ---------- TEST 4: VIRTUAL THREAD PER TASK EXECUTOR ----------
+    private static void testVirtualThreadPerTaskExecutor() throws InterruptedException {
+        log("\n=== Test 4: Virtual Thread Per Task Executor ===");
+
+        ExecutorService exec = CustomExecutorService.newVirtualThreadPerTaskExecutor();
+        AtomicInteger counter = new AtomicInteger(0);
+        int taskCount = 1000;
+
+        // Submit tasks
+        for (int i = 0; i < taskCount; i++) {
+            exec.execute(counter::incrementAndGet);
+        }
+
+        // Give some time for tasks to complete
+        Thread.sleep(1000);
+        log("VirtualThreadPerTaskExecutor counter = " + counter.get());
 
         // Shutdown
         exec.shutdown();
