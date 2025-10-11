@@ -115,42 +115,32 @@ public class CustomExecutorService implements ExecutorService {
         }
     }
 
-    /*
-    Worker threads
+    /**
+     Worker thread  that continuously takes tasks from the queue and executes them.
+     Uses blocking 'take()' — sleeps efficiently until a new task is available.
      */
     private class WorkerRunnable implements Runnable {
-
         @Override
         public void run() {
-            try {
-                while (true) {
-                    Runnable task = null;
-
-                    try {
-                        task = workQueue.poll(1, TimeUnit.SECONDS);
-
-                        if (task != null) {
-                            try {
-                                task.run();
-                            } catch (Throwable t) {
-                                System.err.println("Error: " + t.getMessage());
-                                t.printStackTrace();
-                            }
-                        } else {
-                            if (shutdown.get() && workQueue.isEmpty()) {
-                                break;
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        if (shutdown.get()) {
-                            break;
-                        }
-                        Thread.currentThread().interrupt();
+            // Continue while executor not shutdown or tasks remain in queue
+            while(!shutdown.get() || !workQueue.isEmpty()) {
+                try{
+                    // Waits efficiently for a task (no CPU busy-wait)
+                    Runnable task = workQueue.take();// Blocks efficiently
+                    task.run();
+                }catch (InterruptedException e){
+                    if(shutdown.get()) {
+                        Thread.currentThread().interrupt();// Restore interrupt status
+                        break; // Exit on shutdown interrupt
                     }
+                    // Otherwise, continue (rare case)
+                }catch(Throwable t){ // Catch Throwable for reliability
+                    System.err.println("Task execution failed: " + t.getMessage());
+                    t.printStackTrace();
                 }
-            } finally {
-                shutdownLatch.countDown();
             }
+            shutdownLatch.countDown(); // Уменьшаем счётчик в finally
+
         }
     }
 
@@ -159,6 +149,10 @@ public class CustomExecutorService implements ExecutorService {
     public void shutdown() {
         ensureStarted();
         shutdown.set(true);
+        // Interrupt all workers to wake them from take()
+        for(Thread worker : poolWorkers) {
+            worker.interrupt();
+        }
     }
 
     @Override
