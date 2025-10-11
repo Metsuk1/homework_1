@@ -3,7 +3,8 @@ package com.example.homework_1.server;
 import com.example.homework_1.annotations.*;
 import com.example.homework_1.executor.CustomExecutorService;
 import com.example.homework_1.handlers.HandlerMethod;
-import com.example.homework_1.handlers.RequestHandler;
+import com.example.homework_1.handlers.dispatcher.HttpRequestParser;
+import com.example.homework_1.handlers.dispatcher.RequestDispatcher;
 import com.example.homework_1.http.HttpRequest;
 import com.example.homework_1.http.HttpResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,20 +22,22 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CustomWebServer {
     private final int port;
     private final CustomExecutorService executor;
-    private final RequestHandler requestHandler;
     private ServerSocket serverSocket;
     private volatile boolean running = false;
-    private long startTime;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final HttpRequestParser requestParser;
+    private final RequestDispatcher requestDispatcher;
     private long requestCount = 0;
-    private boolean keepAlive = true;
     private final Map<String, HandlerMethod> routeHandlers = new ConcurrentHashMap<>();
 
     public CustomWebServer(int port, int threadPoolSize, boolean useVirtualThreads) {
-        this.port = port;
+        this.port = port == 0 ? Integer.parseInt(System.getenv("PORT") != null ? System.getenv("PORT") : "8080") : port;
         this.executor = useVirtualThreads
                 ? CustomExecutorService.newVirtualThreadPool(threadPoolSize)
                 : CustomExecutorService.newPlatformThreadPool(threadPoolSize);
-        this.requestHandler = new RequestHandler(routeHandlers, new ObjectMapper());
+        this.requestParser = new HttpRequestParser();
+        this.requestDispatcher = new RequestDispatcher(routeHandlers, objectMapper, "src/main/resources/static");
+        this.running = false;
     }
 
     public void start() throws IOException {
@@ -56,6 +59,8 @@ public class CustomWebServer {
         }
     }
 
+
+
     @SneakyThrows
     private void handleClient(Socket clientSocket) {
         boolean keepAlive = true;
@@ -64,11 +69,11 @@ public class CustomWebServer {
 
             clientSocket.setSoTimeout(30000);
 
-            while (keepAlive) {
-                HttpRequest request = requestHandler.parseHttpRequest(in);
+            while (keepAlive && running) {
+                HttpRequest request = requestParser.parse(in);
                 if (request == null) break;
 
-                HttpResponse response = requestHandler.responseRequest(request);
+                HttpResponse response = requestDispatcher.handleRequest(request);
                 requestCount++;
                 if (response == null) break;
 
@@ -107,11 +112,6 @@ public class CustomWebServer {
         out.flush();
     }
 
-    @SneakyThrows
-    private String guessMimeType(Path file) {
-        String mime = Files.probeContentType(file);
-        return mime != null ? mime : "application/octet-stream";
-    }
 
     public void stop() {
         running = false;
@@ -120,6 +120,7 @@ public class CustomWebServer {
                 serverSocket.close();
             }
         } catch (IOException e) {
+            System.err.println("Error closing server socket: " + e.getMessage());
             e.printStackTrace();
         } finally {
             executor.shutdown();

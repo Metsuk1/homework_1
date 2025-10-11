@@ -46,5 +46,14 @@ public class HttpResponse {
         r.body = message.getBytes();
         return r;
     }
+
+    public static HttpResponse forbidden() {
+        HttpResponse r = new HttpResponse();
+        r.statusCode = 403;
+        r.statusText = "Forbidden";
+        r.contentType = "text/plain";
+        r.body = "Access Denied".getBytes();
+        return r;
+    }
 }
 

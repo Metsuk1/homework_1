@@ -1,7 +1,12 @@
 package com.example.homework_1.handlers;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.lang.reflect.Method;
 
+@Getter
+@Setter
 public class HandlerMethod {
     final Object controller;
     final Method method;

@@ -27,6 +27,7 @@ public class Main {
             Thread.sleep(12_0000);
 
         }catch (Exception e){
+            System.out.println("CustomWebServer stopped errors occured " + e.getMessage());
             e.printStackTrace();
         }finally {
             virtualServer.stop();

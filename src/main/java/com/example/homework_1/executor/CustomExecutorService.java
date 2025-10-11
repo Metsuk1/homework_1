@@ -125,7 +125,6 @@ public class CustomExecutorService implements ExecutorService {
             // Continue while executor not shutdown or tasks remain in queue
             while(!shutdown.get() || !workQueue.isEmpty()) {
                 try{
-                    // Waits efficiently for a task (no CPU busy-wait)
                     Runnable task = workQueue.take();// Blocks efficiently
                     task.run();
                 }catch (InterruptedException e){

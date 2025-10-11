@@ -2,7 +2,6 @@ package com.example.homework_1;
 
 import com.example.homework_1.controllers.UserController;
 import com.example.homework_1.dto.UserDto;
-import com.example.homework_1.http.HttpRequest;
 import com.example.homework_1.repository.UserRepository;
 import com.example.homework_1.server.CustomWebServer;
 import com.example.homework_1.services.UserService;

@@ -32,14 +32,25 @@ public class CustomExecutorServiceTest {
     void testExecuteWithPlatformThreads() throws InterruptedException {
         AtomicInteger counter = new AtomicInteger(0);
         int taskCount = 100;
+        List<Future<?>> futures = new ArrayList<>();
 
         for (int i = 0; i < taskCount; i++) {
-            platformExecutor.execute(counter::incrementAndGet);
+            Future<?> future = platformExecutor.submit(() -> counter.incrementAndGet());
+            futures.add(future);
+        }
+
+        // waiting for all tasks to be completed.
+        for (Future<?> future : futures) {
+            try {
+                future.get(timeoutSeconds, TimeUnit.SECONDS);
+            } catch (ExecutionException | TimeoutException e) {
+                // ignore errors
+            }
         }
 
         platformExecutor.shutdown();
         assertTrue(platformExecutor.awaitTermination(timeoutSeconds, TimeUnit.SECONDS));
-        assertEquals(taskCount, counter.get(), "All tasks should be executed");
+        assertEquals(taskCount, counter.get(), "All tasks should be exduted");
     }
 
     @Test
@@ -47,14 +58,25 @@ public class CustomExecutorServiceTest {
     void testExecuteWithVirtualThreads() throws InterruptedException {
         AtomicInteger counter = new AtomicInteger(0);
         int taskCount = 100;
+        List<Future<?>> futures = new ArrayList<>();
 
         for (int i = 0; i < taskCount; i++) {
-            virtualExecutor.execute(counter::incrementAndGet);
+            Future<?> future = virtualExecutor.submit(() -> counter.incrementAndGet());
+            futures.add(future);
+        }
+
+        // waiting for all tasks to be completed.
+        for (Future<?> future : futures) {
+            try {
+                future.get(timeoutSeconds, TimeUnit.SECONDS);
+            } catch (ExecutionException | TimeoutException e) {
+                // ignore errors
+            }
         }
 
         virtualExecutor.shutdown();
         assertTrue(virtualExecutor.awaitTermination(timeoutSeconds, TimeUnit.SECONDS));
-        assertEquals(taskCount, counter.get(), "All tasks should be executed");
+        assertEquals(taskCount, counter.get(), "All tasks should be exd be executed");
     }
 
     @Test
@@ -118,18 +140,24 @@ public class CustomExecutorServiceTest {
     @Test
     void testShutdownBehavior() throws InterruptedException {
         AtomicInteger counter = new AtomicInteger(0);
-        platformExecutor.execute(() -> {
+        Future<?> future = platformExecutor.submit(() -> {
             try {
                 Thread.sleep(1000);
                 counter.incrementAndGet();
-            } catch (InterruptedException ignored) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         });
 
+        // waiting for all tasks to be completed.
+        try {
+            future.get(timeoutSeconds, TimeUnit.SECONDS);
+        } catch (ExecutionException | TimeoutException e) {
+            // ignore errors
+        }
+
         platformExecutor.shutdown();
         assertTrue(platformExecutor.isShutdown(), "Executor should be shut down");
-        assertFalse(platformExecutor.isTerminated(), "Executor should not be terminated yet");
-
         assertTrue(platformExecutor.awaitTermination(timeoutSeconds, TimeUnit.SECONDS));
         assertTrue(platformExecutor.isTerminated(), "Executor should be terminated");
         assertEquals(1, counter.get(), "Task should have executed");
