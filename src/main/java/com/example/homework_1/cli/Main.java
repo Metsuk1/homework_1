@@ -23,14 +23,16 @@ public class Main {
 
             System.out.println("CustomWebServer started");
             System.out.println("REST API server started:  http://localhost:8080");
+            System.out.println("Press Enter to stop the server...");
 
-            Thread.sleep(12_0000);
+            //Waiting for input in the console
+            System.in.read();
 
+            virtualServer.stop();
+            System.out.println("CustomWebServer stopped");
         }catch (Exception e){
             System.out.println("CustomWebServer stopped errors occured " + e.getMessage());
             e.printStackTrace();
-        }finally {
-            virtualServer.stop();
         }
     }
 }
