@@ -3,6 +3,7 @@ package com.example.homework_1;
 import com.example.homework_1.controllers.UserController;
 import com.example.homework_1.dto.UserDto;
 import com.example.homework_1.http.HttpRequest;
+import com.example.homework_1.repository.UserRepository;
 import com.example.homework_1.server.CustomWebServer;
 import com.example.homework_1.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +21,6 @@ import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,7 +33,7 @@ public class CustomWebServerTest {
     @BeforeEach
     void startServer() throws IOException {
         server = new CustomWebServer(PORT, 50, true);
-        server.registerController(new UserController(new UserService()));
+        server.registerController(new UserController(new UserService(new UserRepository())));
         server.start();
         waitForServerStart();
     }

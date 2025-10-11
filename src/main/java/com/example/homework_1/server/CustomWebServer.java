@@ -15,8 +15,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CustomWebServer {
     private final int port;
@@ -27,7 +27,7 @@ public class CustomWebServer {
     private long startTime;
     private long requestCount = 0;
     private boolean keepAlive = true;
-    private final Map<String, HandlerMethod> routeHandlers = new HashMap<>();
+    private final Map<String, HandlerMethod> routeHandlers = new ConcurrentHashMap<>();
 
     public CustomWebServer(int port, int threadPoolSize, boolean useVirtualThreads) {
         this.port = port;
@@ -58,11 +58,11 @@ public class CustomWebServer {
 
     @SneakyThrows
     private void handleClient(Socket clientSocket) {
+        boolean keepAlive = true;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              OutputStream out = clientSocket.getOutputStream()) {
 
-            keepAlive = true;
-            clientSocket.setSoTimeout(10000);
+            clientSocket.setSoTimeout(30000);
 
             while (keepAlive) {
                 HttpRequest request = requestHandler.parseHttpRequest(in);

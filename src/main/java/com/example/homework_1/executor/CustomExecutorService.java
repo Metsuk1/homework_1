@@ -41,9 +41,9 @@ public class CustomExecutorService implements ExecutorService {
     }
 
     /*
-    It's the specific method for creation complex objects
+    It's the specific method for creation com   plex objects
      */
-    public CustomExecutorService start(){
+    public synchronized CustomExecutorService start(){
        if(started) {
            throw new IllegalStateException("CustomExecutorService already started");
        }
@@ -163,6 +163,8 @@ public class CustomExecutorService implements ExecutorService {
 
     @Override
     public List<Runnable> shutdownNow() {
+        ensureStarted();
+
         shutdown.set(true);
 
         for(Thread worker : poolWorkers) {
@@ -290,6 +292,7 @@ public class CustomExecutorService implements ExecutorService {
         }
 
         workQueue.offer(command);
+
     }
 
     public static CustomExecutorService newVirtualThreadPerTaskExecutor(){

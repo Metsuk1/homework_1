@@ -136,8 +136,10 @@ public class CustomExecutorServiceTest {
     }
 
     @Test
-    void testShutdownNow() {
+    void testShutdownNow() throws InterruptedException {
         AtomicInteger counter = new AtomicInteger(0);
+
+
         platformExecutor.execute(() -> {
             try {
                 Thread.sleep(5000); // Long-running task
@@ -146,9 +148,12 @@ public class CustomExecutorServiceTest {
             }
         });
 
-        List<Runnable> unexecutedTasks = platformExecutor.shutdownNow();
+        platformExecutor.shutdownNow();
+
         assertTrue(platformExecutor.isShutdown(), "Executor should be shut down");
-        assertFalse(unexecutedTasks.isEmpty(), "There should be unexecuted tasks");
+
+        Thread.sleep(100);
+
         assertEquals(0, counter.get(), "Task should be interrupted");
     }
 

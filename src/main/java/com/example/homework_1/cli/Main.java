@@ -2,6 +2,7 @@ package com.example.homework_1.cli;
 
 
 import com.example.homework_1.controllers.UserController;
+import com.example.homework_1.repository.UserRepository;
 import com.example.homework_1.server.CustomWebServer;
 import com.example.homework_1.services.UserService;
 
@@ -12,7 +13,8 @@ public class Main {
         // Initialize server
         CustomWebServer virtualServer = new CustomWebServer(8080,200,true);
 
-        UserService userService = new UserService();
+        UserRepository userRepository = new UserRepository();
+        UserService userService = new UserService(userRepository);
         UserController userController = new UserController(userService);
         virtualServer.registerController(userController);
 

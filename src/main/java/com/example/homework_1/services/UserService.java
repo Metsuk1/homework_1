@@ -2,67 +2,55 @@ package com.example.homework_1.services;
 
 import com.example.homework_1.dto.UserDto;
 import com.example.homework_1.entity.User;
+import com.example.homework_1.repository.UserRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class UserService {
-    private final ConcurrentHashMap<Long, User> users = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final UserRepository repository;
 
-    public synchronized List<UserDto> getAllUsers() {
-        List<UserDto> dtos = new ArrayList<>();
-        for (User user : users.values()) {
-            UserDto dto = new UserDto();
-            dto.setId(user.getId());
-            dto.setName(user.getName());
-            dto.setEmail(user.getEmail());
-            dtos.add(dto);
-        }
-        return dtos;
+    public UserService(UserRepository repository) {
+        this.repository = repository;
     }
 
-    public synchronized UserDto getUserById(Long id) {
-        User user = users.get(id);
-        if (user == null) {
-            throw new IllegalArgumentException("User with ID " + id + " not found");
-        }
-        UserDto dto = new UserDto();
-        dto.setId(user.getId());
-        dto.setName(user.getName());
-        dto.setEmail(user.getEmail());
-        return dto;
+    public  List<UserDto> getAllUsers() {
+       return repository.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    public synchronized UserDto createUser(UserDto dto) {
+    public  UserDto getUserById(Long id) {
+      User user = repository.findById(id);
+      if (user == null){
+          throw new IllegalArgumentException("User with id " + id  +  " not found");
+      }
+
+      return toDto(user);
+    }
+
+    public  UserDto createUser(UserDto dto) {
         dto.validate();
         User user = new User();
-        user.setId(idGenerator.getAndIncrement());
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
-        users.put(user.getId(), user);
-        dto.setId(user.getId());
-        return dto;
+        repository.save(user);
+        return toDto(user);
     }
 
-    public synchronized UserDto updateUser(Long id, UserDto dto) {
-        User user = users.get(id);
-        if (user == null) {
+    public  UserDto updateUser(Long id, UserDto dto) {
+        User exist = repository.findById(id);
+        if (exist == null) {
             throw new IllegalArgumentException("User with ID " + id + " not found");
         }
         dto.validate();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        users.put(id, user);
-        dto.setId(id);
-        return dto;
+        exist.setName(dto.getName());
+        exist.setEmail(dto.getEmail());
+        repository.save(exist);
+        return toDto(exist);
     }
 
-    public synchronized UserDto patchUser(Long id, Map<String, Object> updates) {
-        User user = users.get(id);
+    public  UserDto patchUser(Long id, Map<String, Object> updates) {
+        User user = repository.findById(id);
         if (user == null) {
             throw new IllegalArgumentException("User with ID " + id + " not found");
         }
@@ -80,18 +68,23 @@ public class UserService {
             }
             user.setEmail(email);
         }
-        users.put(id, user);
+        repository.save(user);
+
+        return toDto(user);
+    }
+
+    public  void deleteUser(Long id) {
+        if (!repository.existsById(id)) {
+            throw new IllegalArgumentException("User with ID " + id + " not found");
+        }
+        repository.delete(id);
+    }
+
+    private UserDto toDto(User user) {
         UserDto dto = new UserDto();
         dto.setId(user.getId());
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
         return dto;
-    }
-
-    public synchronized void deleteUser(Long id) {
-        if (!users.containsKey(id)) {
-            throw new IllegalArgumentException("User with ID " + id + " not found");
-        }
-        users.remove(id);
     }
 }

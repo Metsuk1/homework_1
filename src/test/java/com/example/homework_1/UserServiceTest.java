@@ -1,6 +1,7 @@
 package com.example.homework_1;
 
 import com.example.homework_1.dto.UserDto;
+import com.example.homework_1.repository.UserRepository;
 import com.example.homework_1.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ public class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService();
+        userService = new UserService(new UserRepository());
     }
 
     @Test
@@ -80,7 +81,7 @@ public class UserServiceTest {
     @Test
     void testGetUserByIdNotFound() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userService.getUserById(777L));
-        assertEquals("User with ID 777 not found", exception.getMessage());
+        assertEquals("User with id 777 not found", exception.getMessage());
     }
 
     @Test
@@ -130,6 +131,6 @@ public class UserServiceTest {
         userService.deleteUser(created.getId());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userService.getUserById(created.getId()));
-        assertEquals("User with ID " + created.getId() + " not found", exception.getMessage());
+        assertEquals("User with id " + created.getId() + " not found", exception.getMessage());
     }
 }
