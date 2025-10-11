@@ -244,7 +244,7 @@ public class CustomExecutorService implements ExecutorService {
             try {
                 future.get();
             } catch (ExecutionException e) {
-
+                // Explicitly silenced-error in one task should not stop others
             }
         }
 

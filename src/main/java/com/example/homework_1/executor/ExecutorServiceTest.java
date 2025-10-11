@@ -68,7 +68,10 @@ public class ExecutorServiceTest {
             executor.execute(() -> {
                 try {
                     Thread.sleep(sleepMillis);
-                } catch (InterruptedException ignored) {
+                } catch (InterruptedException e) {
+                    // Explicitly silenced: the test intentionally ignores interruption
+                    Thread.currentThread().interrupt(); // restore interrupt flag
+                    log("Task interrupted (explicitly silenced): " + e.getMessage());
                 }
             });
         }

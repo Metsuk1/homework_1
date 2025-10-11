@@ -81,13 +81,15 @@ public class CustomWebServer {
 
         } catch (Exception e) {
             if (running) {
-                e.printStackTrace();
+                System.err.println("CustomWebServer - Error while handling client: " + e.getMessage());
+                e.printStackTrace(System.err);
             }
         } finally {
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                // ignore
+                // Explicitly silenced -closing quietly since socket is already disconnected
+                System.err.println("CustomWebServer socket close failed so it will be ignore: " + e.getMessage());
             }
         }
     }
